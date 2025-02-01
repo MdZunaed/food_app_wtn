@@ -102,6 +102,7 @@ class FoodItemCard extends StatelessWidget {
 
   void showExpandableBottomSheet(BuildContext context) {
     showModalBottomSheet(
+      clipBehavior: Clip.antiAlias,
       context: context,
       isScrollControlled: true, // Allows the sheet to expand fully
       shape: const RoundedRectangleBorder(

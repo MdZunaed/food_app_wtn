@@ -22,7 +22,10 @@ class FoodDetailsScreen extends StatelessWidget {
           children: [
             Stack(
               children: [
-                Image.network(Images.dummyImage, height: 250, width: Get.width, fit: BoxFit.cover),
+                ClipRRect(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(showVariant ? 0 : 20)),
+                    child:
+                        Image.network(Images.dummyImage, height: 250, width: Get.width, fit: BoxFit.cover)),
                 if (showVariant)
                   Positioned(
                     child: IconButton.filled(
