@@ -15,16 +15,6 @@ class RestaurantMenuModel {
       });
     }
   }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['status'] = status;
-    data['message'] = message;
-    if (menus != null) {
-      data['data'] = menus!.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
 }
 
 class Menu {
@@ -36,12 +26,5 @@ class Menu {
   Menu.fromJson(Map<String, dynamic> json) {
     menuId = json['menuId'];
     menuName = json['MenuName'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['menuId'] = menuId;
-    data['MenuName'] = menuName;
-    return data;
   }
 }

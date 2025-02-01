@@ -5,6 +5,7 @@ import 'package:food_app_wtn/constants/app_text_styles.dart';
 import 'package:food_app_wtn/constants/dimensions.dart';
 import 'package:food_app_wtn/data/models/restaurant_info_model.dart';
 import 'package:food_app_wtn/utils/images.dart';
+import 'package:food_app_wtn/view/controllers/homepage_controller.dart';
 import 'package:food_app_wtn/view/controllers/restaurant_info_controller.dart';
 import 'package:food_app_wtn/view/controllers/restaurant_menu_controller.dart';
 import 'package:food_app_wtn/view/controllers/restaurantt_offer_controller.dart';
@@ -22,7 +23,8 @@ class StoreDetailsScreen extends StatefulWidget {
 }
 
 class _StoreDetailsScreenState extends State<StoreDetailsScreen> {
-  ScrollController scrollController = ScrollController();
+  //ScrollController scrollController = ScrollController();
+  final homePageController = Get.find<HomePageController>();
 
   @override
   void initState() {
@@ -44,8 +46,7 @@ class _StoreDetailsScreenState extends State<StoreDetailsScreen> {
         StoreInfo? store = controller.store;
         return SafeArea(
           child: CustomScrollView(
-            controller: scrollController,
-            physics: const BouncingScrollPhysics(),
+            controller: homePageController.scrollController,
             slivers: [
               SliverAppBar(
                 expandedHeight: 250,
@@ -61,7 +62,6 @@ class _StoreDetailsScreenState extends State<StoreDetailsScreen> {
                   background: Image.network(store?.profileImageUrl ?? Images.errorImage, fit: BoxFit.cover),
                 ),
               ),
-
               SliverToBoxAdapter(
                 child: Container(
                   padding: const EdgeInsets.all(Dimensions.paddingDefault),
@@ -182,13 +182,10 @@ class _StoreDetailsScreenState extends State<StoreDetailsScreen> {
                   ),
                 ),
               ),
-              // Pinned category chips
               SliverPersistentHeader(
                 pinned: true,
                 delegate: CategoryHeaderDelegate(),
               ),
-              //const SizedBox(height: Dimensions.paddingSmall),
-
               SliverToBoxAdapter(
                 child: Column(
                   children: [
@@ -196,43 +193,40 @@ class _StoreDetailsScreenState extends State<StoreDetailsScreen> {
                       color: Colors.white,
                       padding: const EdgeInsets.all(Dimensions.paddingDefault),
                       margin: const EdgeInsets.only(top: Dimensions.paddingDefault),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Pizza",
-                            style: boldTextStyle.copyWith(fontSize: 20),
-                          ),
-                          const SizedBox(height: Dimensions.paddingDefault),
-                          ListView.separated(
-                            shrinkWrap: true,
-                            primary: false,
-                            itemCount: 8,
-                            separatorBuilder: (c, i) => const SizedBox(height: Dimensions.paddingSmall),
-                            itemBuilder: (context, index) {
-                              return FoodItemCard();
-                            },
-                          ),
-                        ],
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        primary: false,
+                        itemCount: homePageController.menus.length,
+                        separatorBuilder: (c, i) => const SizedBox(height: Dimensions.paddingDefault),
+                        itemBuilder: (context, index) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                homePageController.menus[index].menuName ?? 'Menu Name',
+                                style: boldTextStyle.copyWith(fontSize: 20),
+                              ),
+                              ListView.separated(
+                                shrinkWrap: true,
+                                primary: false,
+                                itemCount: homePageController
+                                    .getFoodsByMenuId(homePageController.selectedMenuId.toInt())
+                                    .length,
+                                separatorBuilder: (c, i) => const SizedBox(height: Dimensions.paddingSmall),
+                                itemBuilder: (context, index) {
+                                  final food = homePageController
+                                      .getFoodsByMenuId(homePageController.selectedMenuId.toInt())[index];
+                                  return FoodItemCard(food: food);
+                                },
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ],
                 ),
               ),
-              // Content below categories
-              // SliverList(
-              //   delegate: SliverChildBuilderDelegate(
-              //     (context, index) {
-              //       return ListTile(
-              //         title: Text("Item $index"),
-              //         subtitle: Text("Description of item $index"),
-              //         leading:  Icon(Icons.fastfood),
-              //       );
-              //     },
-              //     childCount: 20,
-              //   ),
-              // ),
-              //const SizedBox(height: Dimensions.paddingSmall),
             ],
           ),
         );
@@ -244,41 +238,40 @@ class _StoreDetailsScreenState extends State<StoreDetailsScreen> {
 class CategoryHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final controller = Get.find<HomePageController>();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: Dimensions.paddingSmall),
       decoration: const BoxDecoration(color: Colors.white),
-      child: GetBuilder<RestaurantMenuController>(builder: (controller) {
-        return ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            scrollDirection: Axis.horizontal,
-            itemCount: controller.menus?.length ?? 0,
-            itemBuilder: (context, index) {
-              final menu = controller.menus?[index];
-              return Container(
+      child: Obx(
+        () => ListView.builder(
+          physics: const BouncingScrollPhysics(),
+          scrollDirection: Axis.horizontal,
+          itemCount: controller.menus.length ?? 0,
+          itemBuilder: (context, index) {
+            final menu = controller.menus[index];
+            bool isSelected = controller.selectedMenuId.value == menu.menuId;
+            return InkWell(
+              onTap: () => controller.changeSelectedMenu(menu.menuId!),
+              child: Container(
                 padding: const EdgeInsets.symmetric(
                     vertical: Dimensions.paddingSmall, horizontal: Dimensions.paddingDefault),
                 margin: const EdgeInsets.symmetric(vertical: Dimensions.paddingVerySmall)
                     .copyWith(right: Dimensions.paddingVerySmall),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: isSelected ? AppColors.primary : Colors.white,
+                  border: !isSelected ? Border.all(color: AppColors.grey) : null,
                   borderRadius: BorderRadius.circular(50),
                 ),
-                child: Center(child: Text(menu?.menuName ?? "Menu")),
-              );
-            }
-            // children: [
-            //   Chip(label: Text("Pizza 🍕")),
-            //   SizedBox(width: 8),
-            //   Chip(label: Text("Chicken 🍗")),
-            //   SizedBox(width: 8),
-            //   Chip(label: Text("Burger 🍔")),
-            //   SizedBox(width: 8),
-            //   Chip(label: Text("Platter 🍽️")),
-            //   SizedBox(width: 8),
-            //   Chip(label: Text("Desserts 🍰")),
-            // ],
+                child: Center(
+                    child: Text(
+                  menu.menuName ?? "Menu",
+                  style: mediumTextStyle.copyWith(color: isSelected ? Colors.white : Colors.black),
+                )),
+              ),
             );
-      }),
+          },
+        ),
+      ),
     );
   }
 

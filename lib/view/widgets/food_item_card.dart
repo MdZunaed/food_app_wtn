@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:food_app_wtn/data/models/restaurant_food_model.dart';
 import 'package:food_app_wtn/utils/images.dart';
 import 'package:food_app_wtn/view/screens/food_details_screen.dart';
+import 'package:get/get.dart';
 
 import '../../constants/app_colors.dart';
 import '../../constants/app_text_styles.dart';
@@ -8,14 +10,18 @@ import '../../constants/dimensions.dart';
 import '../../utils/strings.dart';
 
 class FoodItemCard extends StatelessWidget {
-  const FoodItemCard({super.key});
+  final Food food;
+  const FoodItemCard({super.key, required this.food});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        //Get.to(() => const FoodDetailsScreen());
-        showExpandableBottomSheet(context);
+        if (food.isShowVariant ?? false) {
+          Get.to(() => const FoodDetailsScreen());
+        } else {
+          showExpandableBottomSheet(context);
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(Dimensions.paddingSmall),
@@ -39,7 +45,8 @@ class FoodItemCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                            child: Text("Pizza margherita", style: boldTextStyle.copyWith(fontSize: 18))),
+                            child: Text(food.foodName ?? "Pizza margherita",
+                                style: boldTextStyle.copyWith(fontSize: 18))),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               vertical: 2, horizontal: Dimensions.paddingVerySmall),
@@ -61,7 +68,7 @@ class FoodItemCard extends StatelessWidget {
                     const SizedBox(height: Dimensions.paddingVerySmall),
                     const Text(Strings.dummyDescription, maxLines: 2, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
-                    const Text("popular"),
+                    const Text("🔥popular"),
                     const SizedBox(height: Dimensions.paddingVerySmall),
                     Row(
                       children: [
@@ -69,12 +76,12 @@ class FoodItemCard extends StatelessWidget {
                           child: Row(
                             children: [
                               Text(
-                                "data",
+                                food.foodPrice.toString(),
                                 style: boldTextStyle.copyWith(fontSize: 20, color: AppColors.primary),
                               ),
                               const SizedBox(width: Dimensions.paddingVerySmall),
                               Text(
-                                "data",
+                                food.foodPrice.toString(),
                                 style: mediumTextStyle.copyWith(fontSize: 18, color: AppColors.greyDark),
                               ),
                             ],
